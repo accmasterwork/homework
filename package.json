@@ -22,8 +22,8 @@
     "next": "14.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@supabase/supabase-js": "^2.38.0",
-    "@supabase/auth-helpers-nextjs": "^0.8.0",
+    "@supabase/supabase-js": "^2.37.0",
+    "@supabase/auth-helpers-nextjs": "^0.7.4",
     "@supabase/auth-helpers-react": "^0.4.0",
     "@octokit/rest": "^20.0.2",
     "@octokit/auth-oauth-app": "^5.0.5",
@@ -68,6 +68,7 @@
     "supabase": "^1.123.4"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }
