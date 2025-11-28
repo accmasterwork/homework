@@ -178,8 +178,22 @@ clone_repository() {
     fi
     
     git clone https://github.com/accmasterwork/homework.git "$PROJECT_DIR"
+    if [ $? -ne 0 ]; then
+        print_error "Failed to clone repository"
+        exit 1
+    fi
+    
     cd "$PROJECT_DIR"
+    if [ $? -ne 0 ]; then
+        print_error "Failed to enter project directory"
+        exit 1
+    fi
+    
     git checkout codegen-bot/open-source-project-manager-foundation-1763889658
+    if [ $? -ne 0 ]; then
+        print_error "Failed to checkout branch"
+        exit 1
+    fi
     
     print_success "Repository cloned successfully"
 }
@@ -195,26 +209,50 @@ install_npm_dependencies() {
 setup_environment() {
     print_step "Setting up environment configuration..."
     
+    # Check if example file exists
+    if [ ! -f ".env.local.example" ]; then
+        print_error ".env.local.example file not found. Make sure you're in the project directory."
+        exit 1
+    fi
+    
     # Copy example environment file
     cp .env.local.example .env.local
     
     # Generate NextAuth secret
-    local nextauth_secret=$(openssl rand -base64 32)
+    local nextauth_secret
+    if command -v openssl >/dev/null 2>&1; then
+        nextauth_secret=$(openssl rand -base64 32)
+    else
+        # Fallback for systems without openssl
+        nextauth_secret=$(date +%s | sha256sum | base64 | head -c 32)
+    fi
     
-    # Update environment file
-    sed -i.bak "s|your_supabase_project_url|$SUPABASE_URL|g" .env.local
-    sed -i.bak "s|your_supabase_anon_key|$SUPABASE_ANON_KEY|g" .env.local
-    sed -i.bak "s|your_supabase_service_role_key|$SUPABASE_SERVICE_KEY|g" .env.local
-    sed -i.bak "s|your_supabase_project_id|$SUPABASE_PROJECT_ID|g" .env.local
-    sed -i.bak "s|your_github_oauth_app_client_id|$GITHUB_CLIENT_ID|g" .env.local
-    sed -i.bak "s|your_github_oauth_app_client_secret|$GITHUB_CLIENT_SECRET|g" .env.local
-    sed -i.bak "s|your_openai_api_key|$OPENAI_API_KEY|g" .env.local
-    sed -i.bak "s|your_nextauth_secret|$nextauth_secret|g" .env.local
-    sed -i.bak "s|admin@example.com|$ADMIN_EMAIL|g" .env.local
-    sed -i.bak "s|demo123456|$ADMIN_PASSWORD|g" .env.local
-    
-    # Remove backup file
-    rm .env.local.bak
+    # Update environment file (compatible with both GNU and BSD sed)
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        sed -i '' "s|your_supabase_project_url|$SUPABASE_URL|g" .env.local
+        sed -i '' "s|your_supabase_anon_key|$SUPABASE_ANON_KEY|g" .env.local
+        sed -i '' "s|your_supabase_service_role_key|$SUPABASE_SERVICE_KEY|g" .env.local
+        sed -i '' "s|your_supabase_project_id|$SUPABASE_PROJECT_ID|g" .env.local
+        sed -i '' "s|your_github_oauth_app_client_id|$GITHUB_CLIENT_ID|g" .env.local
+        sed -i '' "s|your_github_oauth_app_client_secret|$GITHUB_CLIENT_SECRET|g" .env.local
+        sed -i '' "s|your_openai_api_key|$OPENAI_API_KEY|g" .env.local
+        sed -i '' "s|your_nextauth_secret|$nextauth_secret|g" .env.local
+        sed -i '' "s|admin@example.com|$ADMIN_EMAIL|g" .env.local
+        sed -i '' "s|demo123456|$ADMIN_PASSWORD|g" .env.local
+    else
+        # Linux
+        sed -i "s|your_supabase_project_url|$SUPABASE_URL|g" .env.local
+        sed -i "s|your_supabase_anon_key|$SUPABASE_ANON_KEY|g" .env.local
+        sed -i "s|your_supabase_service_role_key|$SUPABASE_SERVICE_KEY|g" .env.local
+        sed -i "s|your_supabase_project_id|$SUPABASE_PROJECT_ID|g" .env.local
+        sed -i "s|your_github_oauth_app_client_id|$GITHUB_CLIENT_ID|g" .env.local
+        sed -i "s|your_github_oauth_app_client_secret|$GITHUB_CLIENT_SECRET|g" .env.local
+        sed -i "s|your_openai_api_key|$OPENAI_API_KEY|g" .env.local
+        sed -i "s|your_nextauth_secret|$nextauth_secret|g" .env.local
+        sed -i "s|admin@example.com|$ADMIN_EMAIL|g" .env.local
+        sed -i "s|demo123456|$ADMIN_PASSWORD|g" .env.local
+    fi
     
     print_success "Environment configuration completed"
 }
@@ -406,6 +444,9 @@ print_completion() {
 # =============================================================================
 
 main() {
+    # Store original directory
+    local ORIGINAL_DIR=$(pwd)
+    
     print_header
     
     echo -e "${WHITE}Welcome to the Open Source Project Manager setup!${NC}"
@@ -420,7 +461,7 @@ main() {
     # Step 2: Install Node.js
     install_node
     
-    # Step 3: Clone repository
+    # Step 3: Clone repository (this changes directory)
     clone_repository
     
     # Step 4: Install npm dependencies
@@ -455,6 +496,9 @@ main() {
     
     # Step 14: Show completion message
     print_completion
+    
+    # Return to original directory
+    cd "$ORIGINAL_DIR"
 }
 
 # =============================================================================
@@ -478,4 +522,3 @@ fi
 # =============================================================================
 
 main "$@"
-
