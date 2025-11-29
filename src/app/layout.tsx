@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
@@ -11,7 +11,11 @@ export const metadata: Metadata = {
   description: 'Comprehensive platform for managing open-source projects with AI-powered features',
   keywords: ['open source', 'project management', 'github', 'collaboration', 'AI'],
   authors: [{ name: 'Open Source Project Manager Team' }],
-  viewport: 'width=device-width, initial-scale=1',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
   themeColor: '#3b82f6',
 };
 
@@ -43,4 +47,3 @@ export default function RootLayout({
     </html>
   );
 }
-
