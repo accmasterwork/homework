@@ -28,37 +28,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSupabaseUser(authUser);
         
         if (authUser) {
-          // Fetch or create user profile
-          const { data: profile, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', authUser.id)
-            .single();
-
-          if (error && error.code === 'PGRST116') {
-            // User doesn't exist, create profile
-            const newUser: Partial<AppUser> = {
-              id: authUser.id,
-              email: authUser.email!,
-              name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || 'Anonymous',
-              avatar_url: authUser.user_metadata?.avatar_url,
-              github_username: authUser.user_metadata?.user_name,
-              github_id: authUser.user_metadata?.provider_id,
-              role: 'user',
-            };
-
-            const { data: createdUser, error: createError } = await supabase
-              .from('users')
-              .insert([newUser])
-              .select()
-              .single();
-
-            if (!createError && createdUser) {
-              setUser(createdUser);
-            }
-          } else if (!error && profile) {
-            setUser(profile);
-          }
+          // Create a mock user profile for now (until database is set up)
+          const mockUser: AppUser = {
+            id: authUser.id,
+            email: authUser.email!,
+            name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || 'Anonymous',
+            avatar_url: authUser.user_metadata?.avatar_url,
+            github_username: authUser.user_metadata?.user_name,
+            github_id: authUser.user_metadata?.provider_id,
+            role: authUser.email === 'admin@example.com' ? 'admin' : 'user',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          setUser(mockUser);
         } else {
           setUser(null);
         }
@@ -137,4 +119,3 @@ export function useAuth() {
   }
   return context;
 }
-
