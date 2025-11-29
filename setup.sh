@@ -227,32 +227,30 @@ setup_environment() {
         nextauth_secret=$(date +%s | sha256sum | base64 | head -c 32)
     fi
     
-    # Update environment file (compatible with both GNU and BSD sed)
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS
-        sed -i '' "s|your_supabase_project_url|$SUPABASE_URL|g" .env.local
-        sed -i '' "s|your_supabase_anon_key|$SUPABASE_ANON_KEY|g" .env.local
-        sed -i '' "s|your_supabase_service_role_key|$SUPABASE_SERVICE_KEY|g" .env.local
-        sed -i '' "s|your_supabase_project_id|$SUPABASE_PROJECT_ID|g" .env.local
-        sed -i '' "s|your_github_oauth_app_client_id|$GITHUB_CLIENT_ID|g" .env.local
-        sed -i '' "s|your_github_oauth_app_client_secret|$GITHUB_CLIENT_SECRET|g" .env.local
-        sed -i '' "s|your_openai_api_key|$OPENAI_API_KEY|g" .env.local
-        sed -i '' "s|your_nextauth_secret|$nextauth_secret|g" .env.local
-        sed -i '' "s|admin@example.com|$ADMIN_EMAIL|g" .env.local
-        sed -i '' "s|demo123456|$ADMIN_PASSWORD|g" .env.local
-    else
-        # Linux
-        sed -i "s|your_supabase_project_url|$SUPABASE_URL|g" .env.local
-        sed -i "s|your_supabase_anon_key|$SUPABASE_ANON_KEY|g" .env.local
-        sed -i "s|your_supabase_service_role_key|$SUPABASE_SERVICE_KEY|g" .env.local
-        sed -i "s|your_supabase_project_id|$SUPABASE_PROJECT_ID|g" .env.local
-        sed -i "s|your_github_oauth_app_client_id|$GITHUB_CLIENT_ID|g" .env.local
-        sed -i "s|your_github_oauth_app_client_secret|$GITHUB_CLIENT_SECRET|g" .env.local
-        sed -i "s|your_openai_api_key|$OPENAI_API_KEY|g" .env.local
-        sed -i "s|your_nextauth_secret|$nextauth_secret|g" .env.local
-        sed -i "s|admin@example.com|$ADMIN_EMAIL|g" .env.local
-        sed -i "s|demo123456|$ADMIN_PASSWORD|g" .env.local
-    fi
+    # Create environment file using cat instead of sed to avoid special character issues
+    cat > .env.local << EOF
+# Application Configuration
+NEXTAUTH_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXTAUTH_SECRET=$nextauth_secret
+
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_KEY
+SUPABASE_PROJECT_ID=$SUPABASE_PROJECT_ID
+
+# GitHub OAuth Configuration
+GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID
+GITHUB_CLIENT_SECRET=$GITHUB_CLIENT_SECRET
+
+# OpenAI Configuration (Optional)
+OPENAI_API_KEY=$OPENAI_API_KEY
+
+# Admin Account Configuration
+DEMO_ADMIN_EMAIL=$ADMIN_EMAIL
+DEMO_ADMIN_PASSWORD=$ADMIN_PASSWORD
+EOF
     
     print_success "Environment configuration completed"
 }
