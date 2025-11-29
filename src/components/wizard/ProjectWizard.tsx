@@ -119,21 +119,26 @@ export function ProjectWizard() {
 
     setIsCreating(true);
     try {
-      const { data: project, error } = await supabase
-        .from('projects')
-        .insert([
-          {
-            ...formData,
-            owner_id: user.id,
-          }
-        ])
-        .select()
-        .single();
+      // Use our API endpoint instead of direct Supabase call
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          owner_id: user.id,
+        }),
+      });
 
-      if (error) throw error;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create project');
+      }
 
       toast.success('Project created successfully!');
-      router.push(`/projects/${project.id}`);
+      router.push(`/projects/${result.data.id}`);
     } catch (error) {
       console.error('Error creating project:', error);
       toast.error('Failed to create project. Please try again.');

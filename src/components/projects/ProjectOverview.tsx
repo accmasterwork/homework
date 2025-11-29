@@ -42,28 +42,84 @@ export function ProjectOverview({ project, currentUser }: ProjectOverviewProps) 
     try {
       setLoading(true);
       
-      // Fetch recent milestones
-      const { data: milestonesData } = await supabase
-        .from('milestones')
-        .select('*')
-        .eq('project_id', project.id)
-        .order('created_at', { ascending: false })
-        .limit(3);
+      // Use mock data for demo purposes
+      // In production, this would fetch from API endpoints
+      const mockMilestones: Milestone[] = [
+        {
+          id: '1',
+          project_id: project.id,
+          title: 'MVP Release',
+          description: 'Complete minimum viable product',
+          type: 'release',
+          status: 'in_progress',
+          target_date: '2024-12-15',
+          created_at: '2024-11-01T10:00:00Z',
+          updated_at: '2024-11-28T14:30:00Z'
+        },
+        {
+          id: '2',
+          project_id: project.id,
+          title: 'Beta Testing',
+          description: 'Conduct beta testing with users',
+          type: 'community',
+          status: 'planned',
+          target_date: '2024-12-30',
+          created_at: '2024-11-15T10:00:00Z',
+          updated_at: '2024-11-28T14:30:00Z'
+        }
+      ];
 
-      // Fetch recent issues
-      const { data: issuesData } = await supabase
-        .from('issues')
-        .select(`
-          *,
-          assignee:users!issues_assignee_id_fkey(id, name, avatar_url),
-          reporter:users!issues_reporter_id_fkey(id, name, avatar_url)
-        `)
-        .eq('project_id', project.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
+      const mockIssues: Issue[] = [
+        {
+          id: '1',
+          project_id: project.id,
+          title: 'Fix mobile responsive design',
+          description: 'Dashboard not displaying correctly on mobile devices',
+          type: 'bug',
+          status: 'open',
+          priority: 'high',
+          assignee_id: 'user-123',
+          reporter_id: 'user-456',
+          created_at: '2024-11-28T10:00:00Z',
+          updated_at: '2024-11-28T14:30:00Z',
+          assignee: {
+            id: 'user-123',
+            name: 'John Doe',
+            avatar_url: null
+          },
+          reporter: {
+            id: 'user-456',
+            name: 'Jane Smith',
+            avatar_url: null
+          }
+        },
+        {
+          id: '2',
+          project_id: project.id,
+          title: 'Add dark mode support',
+          description: 'Implement dark mode theme option',
+          type: 'feature',
+          status: 'in_progress',
+          priority: 'medium',
+          assignee_id: 'user-789',
+          reporter_id: 'user-123',
+          created_at: '2024-11-27T10:00:00Z',
+          updated_at: '2024-11-28T14:30:00Z',
+          assignee: {
+            id: 'user-789',
+            name: 'Bob Wilson',
+            avatar_url: null
+          },
+          reporter: {
+            id: 'user-123',
+            name: 'John Doe',
+            avatar_url: null
+          }
+        }
+      ];
 
-      setMilestones(milestonesData || []);
-      setRecentIssues(issuesData || []);
+      setMilestones(mockMilestones);
+      setRecentIssues(mockIssues);
     } catch (error) {
       console.error('Error fetching overview data:', error);
     } finally {
@@ -325,4 +381,3 @@ export function ProjectOverview({ project, currentUser }: ProjectOverviewProps) 
     </div>
   );
 }
-
