@@ -71,22 +71,22 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
         {/* Tech Stack */}
         <div className="flex flex-wrap gap-1">
-          {(project.tech_stack || []).slice(0, 3).map((tech) => (
+          {Array.isArray(project.tech_stack) && project.tech_stack.slice(0, 3).map((tech) => (
             <Badge key={tech} variant="secondary" className="text-xs">
               {tech}
             </Badge>
           ))}
-          {(project.tech_stack || []).length > 3 && (
+          {Array.isArray(project.tech_stack) && project.tech_stack.length > 3 && (
             <Badge variant="secondary" className="text-xs">
-              +{(project.tech_stack || []).length - 3}
+              +{project.tech_stack.length - 3}
             </Badge>
           )}
         </div>
 
         {/* License */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>License: {project.license}</span>
-          <span>Updated {formatRelativeTime(project.updated_at)}</span>
+          <span>License: {project.license || 'Not specified'}</span>
+          <span>Updated {project.updated_at ? formatRelativeTime(project.updated_at) : 'Unknown'}</span>
         </div>
       </CardContent>
 
@@ -95,15 +95,15 @@ export function ProjectCard({ project }: ProjectCardProps) {
           <div className="flex items-center space-x-4 text-sm text-muted-foreground">
             <div className="flex items-center space-x-1">
               <Star className="h-4 w-4" />
-              <span>{formatNumber(project.stars)}</span>
+              <span>{formatNumber(project.stars || 0)}</span>
             </div>
             <div className="flex items-center space-x-1">
               <GitFork className="h-4 w-4" />
-              <span>{formatNumber(project.forks)}</span>
+              <span>{formatNumber(project.forks || 0)}</span>
             </div>
             <div className="flex items-center space-x-1">
               <Users className="h-4 w-4" />
-              <span>{formatNumber(project.contributors_count)}</span>
+              <span>{formatNumber(project.contributors_count || 0)}</span>
             </div>
           </div>
           
