@@ -244,6 +244,7 @@ export interface CreateProjectForm {
   tech_stack: string[];
   github_url?: string;
   website_url?: string;
+  documentation_url?: string;
   visibility: Project['visibility'];
 }
 
@@ -316,4 +317,3 @@ export interface GitHubContributor {
   html_url: string;
   contributions: number;
 }
-

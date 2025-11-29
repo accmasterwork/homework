@@ -6,6 +6,9 @@ import type { Database } from './database.types';
 // Client-side Supabase client
 export const createClient = () => createClientComponentClient<Database>();
 
+// Default client export for convenience
+export const supabase = createClientComponentClient<Database>();
+
 // Server-side Supabase client
 export const createServerClient = () => createServerComponentClient<Database>({ cookies });
 
@@ -19,4 +22,3 @@ export const createAdminClient = () => {
     supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
   });
 };
-

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -239,7 +239,7 @@ export function ProjectWizard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <steps[currentStep].icon className="w-5 h-5" />
+            {React.createElement(steps[currentStep].icon, { className: "w-5 h-5" })}
             <span>{steps[currentStep].title}</span>
           </CardTitle>
         </CardHeader>
@@ -272,4 +272,3 @@ export function ProjectWizard() {
     </div>
   );
 }
-
