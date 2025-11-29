@@ -33,15 +33,18 @@ export default function UserDashboard() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Check for mock session (works without Supabase)
+      const mockSession = localStorage.getItem('mockSession');
+      const mockUserData = localStorage.getItem('mockUser');
       
-      if (!session) {
+      if (!mockSession || !mockUserData) {
         router.push('/login');
         return;
       }
 
-      setUser(session.user as User);
-      await loadUserProjects(session.user.id);
+      const mockUser = JSON.parse(mockUserData);
+      setUser(mockUser as User);
+      await loadUserProjects(mockUser.id);
       setLoading(false);
     };
 
@@ -81,7 +84,9 @@ export default function UserDashboard() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    // Clear mock session
+    localStorage.removeItem('mockSession');
+    localStorage.removeItem('mockUser');
     router.push('/');
   };
 

@@ -18,25 +18,44 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        setError(error.message);
-        return;
-      }
-
-      if (data.user) {
-        // Check if user is admin
-        const isAdmin = email === 'admin@example.com';
+      // Mock authentication for demo purposes (works without Supabase)
+      if (email === 'admin@example.com' && password === 'demo123456') {
+        // Mock admin login
+        const mockUser = {
+          id: 'admin-123',
+          email: 'admin@example.com',
+          user_metadata: {
+            full_name: 'Admin User',
+            avatar_url: null
+          }
+        };
         
-        if (isAdmin) {
-          router.push('/admin/dashboard');
-        } else {
-          router.push('/dashboard');
-        }
+        // Store mock session in localStorage for demo
+        localStorage.setItem('mockUser', JSON.stringify(mockUser));
+        localStorage.setItem('mockSession', 'true');
+        
+        router.push('/admin/dashboard');
+        return;
+      } else if (email && password) {
+        // Mock regular user login
+        const mockUser = {
+          id: 'user-123',
+          email: email,
+          user_metadata: {
+            full_name: email.split('@')[0],
+            avatar_url: null
+          }
+        };
+        
+        // Store mock session in localStorage for demo
+        localStorage.setItem('mockUser', JSON.stringify(mockUser));
+        localStorage.setItem('mockSession', 'true');
+        
+        router.push('/dashboard');
+        return;
+      } else {
+        setError('Please enter valid credentials');
+        return;
       }
     } catch (err) {
       setError('An unexpected error occurred');

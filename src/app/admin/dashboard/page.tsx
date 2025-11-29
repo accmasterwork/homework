@@ -39,20 +39,24 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Check for mock session (works without Supabase)
+      const mockSession = localStorage.getItem('mockSession');
+      const mockUserData = localStorage.getItem('mockUser');
       
-      if (!session) {
+      if (!mockSession || !mockUserData) {
         router.push('/login');
         return;
       }
 
+      const mockUser = JSON.parse(mockUserData);
+      
       // Check if user is admin
-      if (session.user.email !== 'admin@example.com') {
+      if (mockUser.email !== 'admin@example.com') {
         router.push('/dashboard');
         return;
       }
 
-      setUser(session.user as User);
+      setUser(mockUser as User);
       await loadAdminStats();
       setLoading(false);
     };
@@ -108,7 +112,9 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    // Clear mock session
+    localStorage.removeItem('mockSession');
+    localStorage.removeItem('mockUser');
     router.push('/');
   };
 

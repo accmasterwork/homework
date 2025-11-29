@@ -24,15 +24,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const getUser = async () => {
       try {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        setSupabaseUser(authUser);
+        // Check for mock session first (works without Supabase)
+        const mockSession = localStorage.getItem('mockSession');
+        const mockUserData = localStorage.getItem('mockUser');
         
-        if (authUser) {
-          // Create a mock user profile for now (until database is set up)
+        if (mockSession && mockUserData) {
+          const authUser = JSON.parse(mockUserData);
+          setSupabaseUser(authUser);
+          
+          // Create a mock user profile for demo
           const mockUser: AppUser = {
             id: authUser.id,
             email: authUser.email!,
-            name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || 'Anonymous',
+            name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email.split('@')[0],
             avatar_url: authUser.user_metadata?.avatar_url,
             github_username: authUser.user_metadata?.user_name,
             github_id: authUser.user_metadata?.provider_id,
@@ -42,10 +46,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
           setUser(mockUser);
         } else {
-          setUser(null);
+          // Try Supabase auth as fallback (if configured)
+          try {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            setSupabaseUser(authUser);
+            
+            if (authUser) {
+              // Create a user profile from Supabase data
+              const mockUser: AppUser = {
+                id: authUser.id,
+                email: authUser.email!,
+                name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || 'Anonymous',
+                avatar_url: authUser.user_metadata?.avatar_url,
+                github_username: authUser.user_metadata?.user_name,
+                github_id: authUser.user_metadata?.provider_id,
+                role: authUser.email === 'admin@example.com' ? 'admin' : 'user',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              };
+              setUser(mockUser);
+            } else {
+              setUser(null);
+            }
+          } catch (supabaseError) {
+            // Supabase not configured, just set user to null
+            setUser(null);
+            setSupabaseUser(null);
+          }
         }
       } catch (error) {
         console.error('Error fetching user:', error);
+        setUser(null);
+        setSupabaseUser(null);
       } finally {
         setLoading(false);
       }
@@ -87,8 +119,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // Clear mock session
+      localStorage.removeItem('mockSession');
+      localStorage.removeItem('mockUser');
+      
+      // Also try Supabase signout if available
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) console.warn('Supabase signout error:', error);
+      } catch (supabaseError) {
+        // Supabase not configured, ignore error
+      }
+      
       setUser(null);
       setSupabaseUser(null);
     } catch (error) {
