@@ -331,20 +331,21 @@ setup_admin_account() {
 }
 
 run_database_migrations() {
-    print_step "Running database migrations..."
+    print_step "Database migration setup..."
     
-    print_info "Please run the following SQL files in your Supabase SQL Editor:"
+    print_info "Database migration files are ready!"
     echo ""
+    echo "📋 Next steps for database setup:"
     echo "1. Go to your Supabase dashboard"
     echo "2. Navigate to SQL Editor"
     echo "3. Run the contents of these files in order:"
     echo "   - supabase/migrations/001_initial_schema.sql"
     echo "   - supabase/migrations/002_rls_policies.sql"
     echo ""
+    echo "💡 You can do this after the installation completes."
+    echo ""
     
-    read -p "Press Enter when you have completed the database setup..."
-    
-    print_success "Database migrations completed"
+    print_success "Database migration files prepared"
 }
 
 build_application() {
@@ -428,10 +429,16 @@ print_completion() {
     echo -e "  ${CHECK} Real-time data with Supabase"
     echo ""
     echo -e "${YELLOW}${WARNING} Next Steps:${NC}"
-    echo "  1. Run './start.sh' to start the development server"
-    echo "  2. Open http://localhost:3000 in your browser"
-    echo "  3. Sign in with GitHub to start creating projects"
-    echo "  4. Explore all the features and customize as needed"
+    echo "  1. Set up your Supabase database:"
+    echo "     - Go to https://supabase.com and create a project"
+    echo "     - Run the SQL files in supabase/migrations/ in your SQL Editor"
+    echo "     - Update your .env.local with Supabase credentials"
+    echo "  2. Set up GitHub OAuth:"
+    echo "     - Create OAuth app at https://github.com/settings/developers"
+    echo "     - Update your .env.local with GitHub credentials"
+    echo "  3. Run './start.sh' to start the development server"
+    echo "  4. Open http://localhost:3000 in your browser"
+    echo "  5. Sign in with GitHub to start creating projects"
     echo ""
     echo -e "${PURPLE}${MAGIC} Happy coding! Your open source projects await! ${MAGIC}${NC}"
     echo ""
@@ -480,13 +487,10 @@ main() {
     # Step 9: Create environment file
     setup_environment
     
-    # Step 10: Run database migrations
+    # Step 10: Prepare database migrations
     run_database_migrations
     
-    # Step 11: Build application
-    build_application
-    
-    # Step 12: Create startup script
+    # Step 11: Create startup script
     create_startup_script
     
     # Step 13: Setup Docker
