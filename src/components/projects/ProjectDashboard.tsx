@@ -111,14 +111,14 @@ export function ProjectDashboard({ project, currentUser }: ProjectDashboardProps
 
             {/* Tech Stack */}
             <div className="flex flex-wrap gap-2 mb-4">
-              {project.tech_stack.slice(0, 5).map((tech) => (
+              {(project.tech_stack || []).slice(0, 5).map((tech) => (
                 <Badge key={tech} variant="secondary" className="text-xs">
                   {tech}
                 </Badge>
               ))}
-              {project.tech_stack.length > 5 && (
+              {(project.tech_stack || []).length > 5 && (
                 <Badge variant="secondary" className="text-xs">
-                  +{project.tech_stack.length - 5} more
+                  +{(project.tech_stack || []).length - 5} more
                 </Badge>
               )}
             </div>
@@ -259,4 +259,3 @@ export function ProjectDashboard({ project, currentUser }: ProjectDashboardProps
     </div>
   );
 }
-

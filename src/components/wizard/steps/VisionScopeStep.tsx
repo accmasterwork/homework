@@ -33,14 +33,14 @@ export function VisionScopeStep({ data, updateData }: VisionScopeStepProps) {
   const [isGeneratingVision, setIsGeneratingVision] = useState(false);
 
   const addGoal = (goal: string) => {
-    if (goal.trim() && !data.goals.includes(goal.trim())) {
-      updateData({ goals: [...data.goals, goal.trim()] });
+    if (goal.trim() && !(data.goals || []).includes(goal.trim())) {
+      updateData({ goals: [...(data.goals || []), goal.trim()] });
       setNewGoal('');
     }
   };
 
   const removeGoal = (index: number) => {
-    const newGoals = data.goals.filter((_, i) => i !== index);
+    const newGoals = (data.goals || []).filter((_, i) => i !== index);
     updateData({ goals: newGoals });
   };
 
@@ -128,9 +128,9 @@ By focusing on developer experience and community-driven development, we aim to 
         </label>
         
         {/* Current Goals */}
-        {data.goals.length > 0 && (
+        {(data.goals || []).length > 0 && (
           <div className="mb-4 space-y-2">
-            {data.goals.map((goal, index) => (
+            {(data.goals || []).map((goal, index) => (
               <div key={index} className="flex items-center justify-between p-3 border border-border rounded-lg bg-muted/50">
                 <span className="text-sm">{goal}</span>
                 <Button
@@ -175,7 +175,7 @@ By focusing on developer experience and community-driven development, we aim to 
           <p className="text-sm text-muted-foreground mb-2">Suggested goals:</p>
           <div className="flex flex-wrap gap-2">
             {goalSuggestions
-              .filter(suggestion => !data.goals.includes(suggestion))
+              .filter(suggestion => !(data.goals || []).includes(suggestion))
               .slice(0, 6)
               .map((suggestion, index) => (
                 <Button
@@ -212,7 +212,7 @@ By focusing on developer experience and community-driven development, we aim to 
       </div>
 
       {/* Preview */}
-      {(data.vision || data.goals.length > 0 || data.scope) && (
+      {(data.vision || (data.goals || []).length > 0 || data.scope) && (
         <div className="mt-8 p-4 border rounded-lg bg-muted/50">
           <h3 className="font-medium mb-3">Preview</h3>
           <div className="space-y-4">
@@ -223,11 +223,11 @@ By focusing on developer experience and community-driven development, we aim to 
               </div>
             )}
             
-            {data.goals.length > 0 && (
+            {(data.goals || []).length > 0 && (
               <div>
                 <h4 className="text-sm font-medium mb-2">Goals</h4>
                 <ul className="space-y-1">
-                  {data.goals.map((goal, index) => (
+                  {(data.goals || []).map((goal, index) => (
                     <li key={index} className="text-sm text-muted-foreground flex items-start">
                       <span className="mr-2">•</span>
                       <span>{goal}</span>
@@ -249,4 +249,3 @@ By focusing on developer experience and community-driven development, we aim to 
     </div>
   );
 }
-

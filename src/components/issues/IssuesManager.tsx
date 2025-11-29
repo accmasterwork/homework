@@ -111,16 +111,16 @@ export function IssuesManager({ issues, projects, onIssueUpdate }: IssuesManager
             </div>
 
             {/* Labels */}
-            {issue.labels && issue.labels.length > 0 && (
+            {(issue.labels || []).length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {issue.labels.slice(0, 3).map((label) => (
+                {(issue.labels || []).slice(0, 3).map((label) => (
                   <Badge key={label} variant="outline" className="text-xs">
                     {label}
                   </Badge>
                 ))}
-                {issue.labels.length > 3 && (
+                {(issue.labels || []).length > 3 && (
                   <Badge variant="outline" className="text-xs">
-                    +{issue.labels.length - 3}
+                    +{(issue.labels || []).length - 3}
                   </Badge>
                 )}
               </div>
@@ -244,4 +244,3 @@ export function IssuesManager({ issues, projects, onIssueUpdate }: IssuesManager
     </div>
   );
 }
-

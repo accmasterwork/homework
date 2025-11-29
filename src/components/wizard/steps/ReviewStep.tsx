@@ -58,7 +58,7 @@ export function ReviewStep({ data, onCreateProject, isCreating }: ReviewStepProp
       </Card>
 
       {/* Vision & Goals */}
-      {(data.vision || data.goals.length > 0 || data.scope) && (
+      {(data.vision || (data.goals || []).length > 0 || data.scope) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -74,19 +74,19 @@ export function ReviewStep({ data, onCreateProject, isCreating }: ReviewStepProp
               </div>
             )}
             
-            {data.goals.length > 0 && (
+            {(data.goals || []).length > 0 && (
               <div>
-                <h5 className="font-medium mb-2">Goals ({data.goals.length})</h5>
+                <h5 className="font-medium mb-2">Goals ({(data.goals || []).length})</h5>
                 <ul className="space-y-1">
-                  {data.goals.slice(0, 5).map((goal, index) => (
+                  {(data.goals || []).slice(0, 5).map((goal, index) => (
                     <li key={index} className="text-sm text-muted-foreground flex items-start">
                       <span className="mr-2">•</span>
                       <span>{goal}</span>
                     </li>
                   ))}
-                  {data.goals.length > 5 && (
+                  {(data.goals || []).length > 5 && (
                     <li className="text-sm text-muted-foreground">
-                      ... and {data.goals.length - 5} more goals
+                      ... and {(data.goals || []).length - 5} more goals
                     </li>
                   )}
                 </ul>
@@ -113,14 +113,14 @@ export function ReviewStep({ data, onCreateProject, isCreating }: ReviewStepProp
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            {data.tech_stack.map((tech) => (
+            {(data.tech_stack || []).map((tech) => (
               <Badge key={tech} variant="secondary">
                 {tech}
               </Badge>
             ))}
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            {data.tech_stack.length} technologies selected
+            {(data.tech_stack || []).length} technologies selected
           </p>
         </CardContent>
       </Card>
@@ -238,4 +238,3 @@ export function ReviewStep({ data, onCreateProject, isCreating }: ReviewStepProp
     </div>
   );
 }
-

@@ -71,14 +71,14 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
         {/* Tech Stack */}
         <div className="flex flex-wrap gap-1">
-          {project.tech_stack.slice(0, 3).map((tech) => (
+          {(project.tech_stack || []).slice(0, 3).map((tech) => (
             <Badge key={tech} variant="secondary" className="text-xs">
               {tech}
             </Badge>
           ))}
-          {project.tech_stack.length > 3 && (
+          {(project.tech_stack || []).length > 3 && (
             <Badge variant="secondary" className="text-xs">
-              +{project.tech_stack.length - 3}
+              +{(project.tech_stack || []).length - 3}
             </Badge>
           )}
         </div>
@@ -117,4 +117,3 @@ export function ProjectCard({ project }: ProjectCardProps) {
     </Card>
   );
 }
-
