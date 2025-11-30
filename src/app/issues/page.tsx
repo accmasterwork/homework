@@ -29,25 +29,17 @@ export default function IssuesPage() {
       setLoading(true);
       
       // Fetch user's projects
-      const { data: projectsData } = await supabase
-        .from('projects')
-        .select('*')
-        .or(`owner_id.eq.${user?.id},id.in.(${await getUserProjectIds()})`);
+      const projectsResponse = await fetch('/api/projects');
+      const projectsResult = await projectsResponse.json();
+      const projectsData = projectsResult.data || [];
 
       // Fetch issues
-      const { data: issuesData } = await supabase
-        .from('issues')
-        .select(`
-          *,
-          project:projects!issues_project_id_fkey(id, name),
-          assignee:users!issues_assignee_id_fkey(id, name, avatar_url),
-          reporter:users!issues_reporter_id_fkey(id, name, avatar_url)
-        `)
-        .in('project_id', (projectsData || []).map(p => p.id))
-        .order('created_at', { ascending: false });
+      const issuesResponse = await fetch('/api/issues');
+      const issuesResult = await issuesResponse.json();
+      const issuesData = issuesResult.data || [];
 
-      setProjects(projectsData || []);
-      setIssues(issuesData || []);
+      setProjects(projectsData);
+      setIssues(issuesData);
     } catch (error) {
       console.error('Error fetching issues:', error);
     } finally {
@@ -55,16 +47,7 @@ export default function IssuesPage() {
     }
   };
 
-  const getUserProjectIds = async () => {
-    if (!user) return [];
-    
-    const { data } = await supabase
-      .from('project_members')
-      .select('project_id')
-      .eq('user_id', user.id);
-    
-    return (data || []).map(pm => pm.project_id);
-  };
+
 
   if (authLoading || loading) {
     return (

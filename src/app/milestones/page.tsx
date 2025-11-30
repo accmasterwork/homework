@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { MilestonesBoard } from '@/components/milestones/MilestonesBoard';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase';
+
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, Plus } from 'lucide-react';
 import Link from 'next/link';
@@ -17,7 +17,7 @@ export default function MilestonesPage() {
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
 
-  const supabase = createClient();
+
 
   useEffect(() => {
     if (user) {
@@ -30,24 +30,17 @@ export default function MilestonesPage() {
       setLoading(true);
       
       // Fetch user's projects
-      const { data: projectsData } = await supabase
-        .from('projects')
-        .select('*')
-        .or(`owner_id.eq.${user?.id},id.in.(${await getUserProjectIds()})`);
+      const projectsResponse = await fetch('/api/projects');
+      const projectsResult = await projectsResponse.json();
+      const projectsData = projectsResult.data || [];
 
       // Fetch milestones
-      const { data: milestonesData } = await supabase
-        .from('milestones')
-        .select(`
-          *,
-          project:projects!milestones_project_id_fkey(id, name),
-          assignee:users!milestones_assignee_id_fkey(id, name, avatar_url)
-        `)
-        .in('project_id', (projectsData || []).map(p => p.id))
-        .order('created_at', { ascending: false });
+      const milestonesResponse = await fetch('/api/milestones');
+      const milestonesResult = await milestonesResponse.json();
+      const milestonesData = milestonesResult.data || [];
 
-      setProjects(projectsData || []);
-      setMilestones(milestonesData || []);
+      setProjects(projectsData);
+      setMilestones(milestonesData);
     } catch (error) {
       console.error('Error fetching milestones:', error);
     } finally {
@@ -55,16 +48,7 @@ export default function MilestonesPage() {
     }
   };
 
-  const getUserProjectIds = async () => {
-    if (!user) return [];
-    
-    const { data } = await supabase
-      .from('project_members')
-      .select('project_id')
-      .eq('user_id', user.id);
-    
-    return (data || []).map(pm => pm.project_id);
-  };
+
 
   const filteredMilestones = selectedProject 
     ? milestones.filter(m => m.project_id === selectedProject)
@@ -158,4 +142,3 @@ export default function MilestonesPage() {
     </div>
   );
 }
-

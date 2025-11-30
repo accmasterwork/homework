@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { supabase } from '@/lib/supabase';
+
 import { 
   Plus, 
   Search, 
@@ -51,13 +51,14 @@ export default function ProjectsPage() {
 
   const fetchProjects = async () => {
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .order('updated_at', { ascending: false });
+      const response = await fetch('/api/projects');
+      const result = await response.json();
 
-      if (error) throw error;
-      setProjects(data || []);
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch projects');
+      }
+
+      setProjects(result.data || []);
     } catch (error) {
       console.error('Error fetching projects:', error);
     } finally {
