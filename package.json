@@ -14,9 +14,11 @@
     "db:migrate": "supabase migration up",
     "test": "jest",
     "test:watch": "jest --watch",
-    "setup": "chmod +x setup.sh && ./setup.sh",
-    "setup:windows": "setup.bat",
-    "quick-start": "npm run setup && npm run dev"
+    "install-deps": "node install-deps.js",
+    "setup": "npm run install-deps",
+    "setup:windows": "npm run install-deps",
+    "quick-start": "npm run setup && npm run dev",
+    "postinstall": "echo '✅ Base installation complete. Run npm run install-deps for hosting-specific dependencies.'"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",
@@ -47,11 +49,14 @@
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^9.0.1",
     "zod": "^3.22.4",
-    "mysql2": "^3.6.5",
+
+  },
+  "optionalDependencies": {
+    "mysql2": "^3.6.0",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^6.9.7",
-    "next-auth": "^4.24.5"
+    "jsonwebtoken": "^9.0.0",
+    "nodemailer": "^6.9.0",
+    "next-auth": "^4.24.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.5",
@@ -79,5 +84,6 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
-  }
+  },
+  "engineStrict": false
 }
