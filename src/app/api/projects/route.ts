@@ -74,6 +74,37 @@ const mockProjects = [
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    // If ID is provided, return single project
+    if (id) {
+      const project = mockProjects.find(p => p.id === id);
+      
+      if (!project) {
+        return NextResponse.json({
+          success: false,
+          error: 'Project not found'
+        }, { status: 404 });
+      }
+
+      // Add mock owner data
+      const projectWithOwner = {
+        ...project,
+        owner: {
+          id: project.owner_id,
+          name: project.owner_id === 'user-123' ? 'John Doe' : 'Jane Smith',
+          avatar_url: null,
+          github_username: project.owner_id === 'user-123' ? 'johndoe' : 'janesmith'
+        }
+      };
+
+      return NextResponse.json({
+        success: true,
+        data: projectWithOwner
+      });
+    }
+
+    // Otherwise, return paginated list
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';

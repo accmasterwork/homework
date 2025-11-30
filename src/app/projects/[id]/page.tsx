@@ -30,17 +30,13 @@ export default function ProjectDetailsPage() {
   const fetchProject = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('projects')
-        .select(`
-          *,
-          owner:users!projects_owner_id_fkey(id, name, avatar_url, github_username)
-        `)
-        .eq('id', projectId)
-        .single();
+      
+      // Use API endpoint instead of direct Supabase call
+      const response = await fetch(`/api/projects?id=${projectId}`);
+      const result = await response.json();
 
-      if (error) {
-        if (error.code === 'PGRST116') {
+      if (!response.ok) {
+        if (response.status === 404) {
           setError('Project not found');
         } else {
           setError('Failed to load project');
@@ -48,7 +44,7 @@ export default function ProjectDetailsPage() {
         return;
       }
 
-      setProject(data);
+      setProject(result.data);
     } catch (err) {
       console.error('Error fetching project:', err);
       setError('Failed to load project');
@@ -104,4 +100,3 @@ export default function ProjectDetailsPage() {
     </div>
   );
 }
-
