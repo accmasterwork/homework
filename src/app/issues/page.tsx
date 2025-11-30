@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { IssuesManager } from '@/components/issues/IssuesManager';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase';
+
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, Plus } from 'lucide-react';
 import Link from 'next/link';
@@ -16,7 +16,7 @@ export default function IssuesPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const supabase = createClient();
+
 
   useEffect(() => {
     if (user) {
@@ -138,4 +138,3 @@ export default function IssuesPage() {
     </div>
   );
 }
-

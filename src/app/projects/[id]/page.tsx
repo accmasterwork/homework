@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { ProjectDashboard } from '@/components/projects/ProjectDashboard';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase';
+
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -19,7 +19,7 @@ export default function ProjectDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const supabase = createClient();
+
 
   useEffect(() => {
     if (projectId) {
