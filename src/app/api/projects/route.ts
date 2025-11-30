@@ -158,20 +158,37 @@ export async function POST(request: NextRequest) {
   try {
     const projectData = await request.json();
 
-    // For demo purposes, use mock authentication
-    // In production, this would use proper Supabase authentication
+    // Check for authentication - support both Supabase and mock auth
     let user = null;
     
-    try {
-      const supabase = createRouteHandlerClient({ cookies });
-      const { data: { user: supabaseUser }, error: authError } = await supabase.auth.getUser();
-      user = supabaseUser;
-    } catch (supabaseError) {
-      // Fallback to mock user if Supabase is not configured
-      console.log('Supabase not configured, using mock authentication');
+    // First try to get user from Authorization header (mock auth)
+    const authHeader = request.headers.get('Authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      // For demo purposes, accept any token as valid
       user = {
-        id: 'mock-user-id',
-        email: 'user@example.com'
+        id: 'demo-user-id',
+        email: 'admin@example.com'
+      };
+    }
+    
+    // If no auth header, try Supabase authentication
+    if (!user) {
+      try {
+        const supabase = createRouteHandlerClient({ cookies });
+        const { data: { user: supabaseUser }, error: authError } = await supabase.auth.getUser();
+        user = supabaseUser;
+      } catch (supabaseError) {
+        console.log('Supabase authentication failed:', supabaseError);
+      }
+    }
+    
+    // If still no user, try mock authentication for demo
+    if (!user) {
+      console.log('Using mock authentication for demo');
+      user = {
+        id: 'demo-user-id',
+        email: 'admin@example.com'
       };
     }
 

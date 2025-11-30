@@ -119,12 +119,21 @@ export function ProjectWizard() {
 
     setIsCreating(true);
     try {
+      // Get auth token from localStorage for demo
+      const mockSession = localStorage.getItem('mockSession');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Add authorization header if we have a mock session
+      if (mockSession) {
+        headers['Authorization'] = `Bearer ${mockSession}`;
+      }
+
       // Use our API endpoint instead of direct Supabase call
       const response = await fetch('/api/projects', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           ...formData,
           owner_id: user.id,
