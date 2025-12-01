@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { ProjectStorage, type Project } from '@/lib/storage';
+import type { Project } from '@/lib/storage';
 
-// Default mock project data for demo
-const defaultProjects: Project[] = [
+// Server-side in-memory storage (will persist across requests in development)
+// In production, this should be replaced with a database
+let serverProjects: Project[] = [
   {
     id: '1',
     name: 'React Dashboard',
@@ -72,26 +73,14 @@ const defaultProjects: Project[] = [
   }
 ];
 
-// Initialize default projects if localStorage is empty (client-side only)
-if (typeof window !== 'undefined') {
-  ProjectStorage.initialize(defaultProjects);
-}
-
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     
-    // Load projects from storage (with fallback to default projects)
-    let allProjects = ProjectStorage.load();
-    if (allProjects.length === 0) {
-      allProjects = defaultProjects;
-      ProjectStorage.save(allProjects);
-    }
-    
     // If ID is provided, return single project
     if (id) {
-      const project = allProjects.find(p => p.id === id);
+      const project = serverProjects.find(p => p.id === id);
       
       if (!project) {
         return NextResponse.json({
@@ -125,7 +114,7 @@ export async function GET(request: NextRequest) {
     const owner_id = searchParams.get('owner_id') || '';
 
     // Filter projects based on query parameters
-    let filteredProjects = allProjects;
+    let filteredProjects = serverProjects;
 
     if (search) {
       filteredProjects = filteredProjects.filter(project =>
@@ -248,15 +237,8 @@ export async function POST(request: NextRequest) {
       last_activity_at: new Date().toISOString()
     };
 
-    // Save to persistent storage
-    const saved = ProjectStorage.add(newProject);
-    
-    if (!saved) {
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to save project'
-      }, { status: 500 });
-    }
+    // Save to server-side storage
+    serverProjects.push(newProject);
 
     return NextResponse.json({
       success: true,
@@ -307,14 +289,16 @@ export async function PUT(request: NextRequest) {
     }
 
     // Find project
-    const project = ProjectStorage.findById(id);
+    const projectIndex = serverProjects.findIndex(p => p.id === id);
     
-    if (!project) {
+    if (projectIndex === -1) {
       return NextResponse.json({
         success: false,
         error: 'Project not found'
       }, { status: 404 });
     }
+
+    const project = serverProjects[projectIndex];
 
     // Check if user owns the project or is admin
     if (project.owner_id !== user.id && user.email !== 'admin@example.com') {
@@ -324,25 +308,17 @@ export async function PUT(request: NextRequest) {
       }, { status: 403 });
     }
 
-    // Update project with persistence
-    const updated = ProjectStorage.update(id, {
+    // Update project
+    serverProjects[projectIndex] = {
+      ...project,
       ...updateData,
       updated_at: new Date().toISOString(),
       last_activity_at: new Date().toISOString()
-    });
-
-    if (!updated) {
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to update project'
-      }, { status: 500 });
-    }
-
-    const updatedProject = ProjectStorage.findById(id);
+    };
 
     return NextResponse.json({
       success: true,
-      data: updatedProject,
+      data: serverProjects[projectIndex],
       message: 'Project updated successfully'
     });
 
@@ -390,14 +366,16 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Find project
-    const project = ProjectStorage.findById(id);
+    const projectIndex = serverProjects.findIndex(p => p.id === id);
     
-    if (!project) {
+    if (projectIndex === -1) {
       return NextResponse.json({
         success: false,
         error: 'Project not found'
       }, { status: 404 });
     }
+
+    const project = serverProjects[projectIndex];
 
     // Check if user owns the project or is admin
     if (project.owner_id !== user.id && user.email !== 'admin@example.com') {
@@ -407,15 +385,8 @@ export async function DELETE(request: NextRequest) {
       }, { status: 403 });
     }
 
-    // Delete project with persistence
-    const deleted = ProjectStorage.delete(id);
-
-    if (!deleted) {
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to delete project'
-      }, { status: 500 });
-    }
+    // Delete project
+    serverProjects.splice(projectIndex, 1);
 
     return NextResponse.json({
       success: true,
