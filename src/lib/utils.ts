@@ -98,6 +98,10 @@ export function isValidUrl(url: string): boolean {
 }
 
 export function getStatusColor(status: string): string {
+  if (!status) {
+    return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+  }
+  
   switch (status.toLowerCase()) {
     case 'open':
     case 'active':
@@ -118,6 +122,10 @@ export function getStatusColor(status: string): string {
 }
 
 export function getPriorityColor(priority: string): string {
+  if (!priority) {
+    return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+  }
+  
   switch (priority.toLowerCase()) {
     case 'high':
     case 'critical':
@@ -155,4 +163,3 @@ export function throttle<T extends (...args: any[]) => any>(
     }
   };
 }
-
