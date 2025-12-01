@@ -39,7 +39,7 @@ if (hostingMode === 'cyberpanel') {
     'mysql2@^3.6.0',
     'bcryptjs@^2.4.3', 
     'jsonwebtoken@^9.0.0',
-    'nodemailer@^6.9.0',
+    'nodemailer@^7.0.0',
     'next-auth@^4.24.0'
   ];
   
