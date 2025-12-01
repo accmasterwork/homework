@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { MilestonesBoard } from '@/components/milestones/MilestonesBoard';
+import { MilestoneFormModal } from '@/components/milestones/MilestoneFormModal';
 import { useAuth } from '@/contexts/AuthContext';
 
 import { Button } from '@/components/ui/Button';
@@ -16,6 +17,7 @@ export default function MilestonesPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
 
 
@@ -125,7 +127,7 @@ export default function MilestonesPage() {
                 ))}
               </select>
 
-              <Button>
+              <Button onClick={() => setIsModalOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 New Milestone
               </Button>
@@ -137,6 +139,14 @@ export default function MilestonesPage() {
           milestones={filteredMilestones} 
           projects={projects}
           onMilestoneUpdate={fetchData}
+        />
+
+        {/* Milestone Creation Modal */}
+        <MilestoneFormModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={fetchData}
+          projects={projects}
         />
       </div>
     </div>

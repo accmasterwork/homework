@@ -30,20 +30,34 @@ export default function ProjectDetailsPage() {
   const fetchProject = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
+      console.log('Fetching project with ID:', projectId);
       
       // Use API endpoint instead of direct Supabase call
       const response = await fetch(`/api/projects?id=${projectId}`);
       const result = await response.json();
 
+      console.log('API Response:', { status: response.status, result });
+
       if (!response.ok) {
         if (response.status === 404) {
           setError('Project not found');
+          console.error('Project not found:', projectId);
         } else {
           setError('Failed to load project');
+          console.error('Failed to load project:', response.status, result);
         }
         return;
       }
 
+      if (!result.data) {
+        setError('Invalid API response - no data');
+        console.error('Invalid API response:', result);
+        return;
+      }
+
+      console.log('Project loaded successfully:', result.data);
       setProject(result.data);
     } catch (err) {
       console.error('Error fetching project:', err);

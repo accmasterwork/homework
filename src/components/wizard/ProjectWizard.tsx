@@ -142,11 +142,23 @@ export function ProjectWizard() {
 
       const result = await response.json();
 
+      console.log('Project creation response:', { status: response.status, result });
+
       if (!response.ok) {
         throw new Error(result.error || 'Failed to create project');
       }
 
+      if (!result.data || !result.data.id) {
+        console.error('Invalid API response - missing project ID:', result);
+        throw new Error('Invalid API response');
+      }
+
+      console.log('Project created successfully, redirecting to:', `/projects/${result.data.id}`);
       toast.success('Project created successfully!');
+      
+      // Small delay to ensure the project is fully created before redirect
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       router.push(`/projects/${result.data.id}`);
     } catch (error) {
       console.error('Error creating project:', error);

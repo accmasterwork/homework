@@ -34,20 +34,26 @@ export default function SettingsPage() {
     itemsPerPage: 10
   });
 
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedPreferences = UserPreferencesStorage.load({});
+        if (Object.keys(savedPreferences).length > 0) {
+          setSettings(prev => ({ ...prev, ...savedPreferences }));
+        }
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+      }
+    }
+  }, []);
+
+  // Handle authentication redirect
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
-      return;
     }
-
-    if (user) {
-      // Load user preferences from storage
-      const savedPreferences = UserPreferencesStorage.load({});
-      if (Object.keys(savedPreferences).length > 0) {
-        setSettings(prev => ({ ...prev, ...savedPreferences }));
-      }
-    }
-  }, [user, loading, router]);
+  }, [loading, user, router]);
 
   if (loading) {
     return (
@@ -69,6 +75,9 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // Save to localStorage
       const saved = UserPreferencesStorage.save(settings);
       
@@ -78,6 +87,7 @@ export default function SettingsPage() {
         toast.error('Failed to save settings');
       }
     } catch (error) {
+      console.error('Failed to save settings:', error);
       toast.error('Failed to save settings');
     } finally {
       setIsSaving(false);
@@ -352,4 +362,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-

@@ -13,6 +13,8 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { getInitials } from '@/lib/utils';
 
+const PROFILE_STORAGE_KEY = 'ospm_user_profile';
+
 export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -27,12 +29,22 @@ export default function ProfilePage() {
     company: ''
   });
 
+  // Load profile data from localStorage on mount
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-      return;
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(PROFILE_STORAGE_KEY);
+        if (saved) {
+          const savedProfile = JSON.parse(saved);
+          setProfile(savedProfile);
+          return;
+        }
+      } catch (error) {
+        console.error('Failed to load profile from localStorage:', error);
+      }
     }
 
+    // If no saved profile, use user data
     if (user) {
       setProfile({
         name: user.name || '',
@@ -44,7 +56,14 @@ export default function ProfilePage() {
         company: user.company || ''
       });
     }
-  }, [user, loading, router]);
+  }, [user]);
+
+  // Handle authentication redirect
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [loading, user, router]);
 
   if (loading) {
     return (
@@ -66,10 +85,17 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // In real implementation, this would call /api/user/profile
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Save to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+      }
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       toast.success('Profile updated successfully!');
     } catch (error) {
+      console.error('Failed to save profile:', error);
       toast.error('Failed to update profile');
     } finally {
       setIsSaving(false);
@@ -258,4 +284,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
