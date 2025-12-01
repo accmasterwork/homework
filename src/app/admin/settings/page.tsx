@@ -11,12 +11,14 @@ import { Textarea } from '@/components/ui/Textarea';
 import { ArrowLeft, Settings, Save, Shield, Mail, Globe, Database } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import { SettingsStorage, type PlatformSettings } from '@/lib/storage';
 
 export default function AdminSettingsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
-  const [settings, setSettings] = useState({
+  
+  const defaultSettings: PlatformSettings = {
     // Platform Settings
     platformName: 'Open Source Project Manager',
     platformDescription: 'A comprehensive platform for managing open-source projects',
@@ -55,7 +57,9 @@ export default function AdminSettingsPage() {
     // Maintenance
     maintenanceMode: false,
     maintenanceMessage: 'The platform is currently under maintenance. Please check back later.'
-  });
+  };
+  
+  const [settings, setSettings] = useState<PlatformSettings>(defaultSettings);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -66,6 +70,12 @@ export default function AdminSettingsPage() {
     if (!loading && user && user.email !== 'admin@example.com') {
       router.push('/dashboard');
       return;
+    }
+
+    // Load saved settings from storage
+    if (user && user.email === 'admin@example.com') {
+      const savedSettings = SettingsStorage.load(defaultSettings);
+      setSettings(savedSettings);
     }
   }, [user, loading, router]);
 
@@ -89,10 +99,16 @@ export default function AdminSettingsPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Mock save - in real implementation, this would call /api/admin/settings
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Settings saved successfully!');
+      // Save settings to localStorage
+      const saved = SettingsStorage.save(settings);
+      
+      if (saved) {
+        toast.success('Settings saved successfully!');
+      } else {
+        toast.error('Failed to save settings');
+      }
     } catch (error) {
+      console.error('Error saving settings:', error);
       toast.error('Failed to save settings');
     } finally {
       setIsSaving(false);

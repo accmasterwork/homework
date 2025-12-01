@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
+import { ProjectStorage, type Project } from '@/lib/storage';
 
-// Mock project data for demo
-const mockProjects = [
+// Default mock project data for demo
+const defaultProjects: Project[] = [
   {
     id: '1',
     name: 'React Dashboard',
@@ -71,14 +72,26 @@ const mockProjects = [
   }
 ];
 
+// Initialize default projects if localStorage is empty (client-side only)
+if (typeof window !== 'undefined') {
+  ProjectStorage.initialize(defaultProjects);
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     
+    // Load projects from storage (with fallback to default projects)
+    let allProjects = ProjectStorage.load();
+    if (allProjects.length === 0) {
+      allProjects = defaultProjects;
+      ProjectStorage.save(allProjects);
+    }
+    
     // If ID is provided, return single project
     if (id) {
-      const project = mockProjects.find(p => p.id === id);
+      const project = allProjects.find(p => p.id === id);
       
       if (!project) {
         return NextResponse.json({
@@ -92,9 +105,9 @@ export async function GET(request: NextRequest) {
         ...project,
         owner: {
           id: project.owner_id,
-          name: project.owner_id === 'user-123' ? 'John Doe' : 'Jane Smith',
+          name: project.owner_id === 'user-123' ? 'John Doe' : project.owner_id === 'demo-user-id' ? 'Admin User' : 'Jane Smith',
           avatar_url: null,
-          github_username: project.owner_id === 'user-123' ? 'johndoe' : 'janesmith'
+          github_username: project.owner_id === 'user-123' ? 'johndoe' : project.owner_id === 'demo-user-id' ? 'admin' : 'janesmith'
         }
       };
 
@@ -112,7 +125,7 @@ export async function GET(request: NextRequest) {
     const owner_id = searchParams.get('owner_id') || '';
 
     // Filter projects based on query parameters
-    let filteredProjects = mockProjects;
+    let filteredProjects = allProjects;
 
     if (search) {
       filteredProjects = filteredProjects.filter(project =>
@@ -210,10 +223,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create new project (mock implementation)
-    const newProject = {
+    // Create new project
+    const newProject: Project = {
       id: `project-${Date.now()}`,
-      ...projectData,
+      name: projectData.name,
+      description: projectData.description,
+      vision: projectData.vision,
+      goals: projectData.goals,
+      scope: projectData.scope,
+      license: projectData.license,
+      tech_stack: projectData.tech_stack,
+      github_url: projectData.github_url,
+      website_url: projectData.website_url,
+      documentation_url: projectData.documentation_url,
       owner_id: user.id,
       stars: 0,
       forks: 0,
@@ -226,8 +248,15 @@ export async function POST(request: NextRequest) {
       last_activity_at: new Date().toISOString()
     };
 
-    // In a real implementation, this would save to the database
-    mockProjects.push(newProject);
+    // Save to persistent storage
+    const saved = ProjectStorage.add(newProject);
+    
+    if (!saved) {
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to save project'
+      }, { status: 500 });
+    }
 
     return NextResponse.json({
       success: true,
@@ -277,17 +306,15 @@ export async function PUT(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Find and update project (mock implementation)
-    const projectIndex = mockProjects.findIndex(p => p.id === id);
+    // Find project
+    const project = ProjectStorage.findById(id);
     
-    if (projectIndex === -1) {
+    if (!project) {
       return NextResponse.json({
         success: false,
         error: 'Project not found'
       }, { status: 404 });
     }
-
-    const project = mockProjects[projectIndex];
 
     // Check if user owns the project or is admin
     if (project.owner_id !== user.id && user.email !== 'admin@example.com') {
@@ -297,17 +324,25 @@ export async function PUT(request: NextRequest) {
       }, { status: 403 });
     }
 
-    // Update project
-    mockProjects[projectIndex] = {
-      ...project,
+    // Update project with persistence
+    const updated = ProjectStorage.update(id, {
       ...updateData,
       updated_at: new Date().toISOString(),
       last_activity_at: new Date().toISOString()
-    };
+    });
+
+    if (!updated) {
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to update project'
+      }, { status: 500 });
+    }
+
+    const updatedProject = ProjectStorage.findById(id);
 
     return NextResponse.json({
       success: true,
-      data: mockProjects[projectIndex],
+      data: updatedProject,
       message: 'Project updated successfully'
     });
 
@@ -354,17 +389,15 @@ export async function DELETE(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Find project (mock implementation)
-    const projectIndex = mockProjects.findIndex(p => p.id === id);
+    // Find project
+    const project = ProjectStorage.findById(id);
     
-    if (projectIndex === -1) {
+    if (!project) {
       return NextResponse.json({
         success: false,
         error: 'Project not found'
       }, { status: 404 });
     }
-
-    const project = mockProjects[projectIndex];
 
     // Check if user owns the project or is admin
     if (project.owner_id !== user.id && user.email !== 'admin@example.com') {
@@ -374,8 +407,15 @@ export async function DELETE(request: NextRequest) {
       }, { status: 403 });
     }
 
-    // Delete project
-    mockProjects.splice(projectIndex, 1);
+    // Delete project with persistence
+    const deleted = ProjectStorage.delete(id);
+
+    if (!deleted) {
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to delete project'
+      }, { status: 500 });
+    }
 
     return NextResponse.json({
       success: true,

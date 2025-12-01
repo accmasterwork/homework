@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { 
@@ -20,6 +21,7 @@ interface UserMenuProps {
 
 export function UserMenu({ user }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
   const { signOut } = useAuth();
 
   const handleSignOut = async () => {
@@ -30,6 +32,16 @@ export function UserMenu({ user }: UserMenuProps) {
       console.error('Sign out error:', error);
       toast.error('Failed to sign out');
     }
+  };
+
+  const handleProfileClick = () => {
+    setIsOpen(false);
+    router.push('/profile');
+  };
+
+  const handleSettingsClick = () => {
+    setIsOpen(false);
+    router.push('/settings');
   };
 
   return (
@@ -89,10 +101,7 @@ export function UserMenu({ user }: UserMenuProps) {
             <div className="py-1">
               <button
                 className="flex w-full items-center px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-                onClick={() => {
-                  setIsOpen(false);
-                  // Navigate to profile
-                }}
+                onClick={handleProfileClick}
               >
                 <UserCircle className="h-4 w-4 mr-3" />
                 Profile
@@ -100,10 +109,7 @@ export function UserMenu({ user }: UserMenuProps) {
               
               <button
                 className="flex w-full items-center px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-                onClick={() => {
-                  setIsOpen(false);
-                  // Navigate to settings
-                }}
+                onClick={handleSettingsClick}
               >
                 <Settings className="h-4 w-4 mr-3" />
                 Settings
@@ -128,4 +134,3 @@ export function UserMenu({ user }: UserMenuProps) {
     </div>
   );
 }
-
