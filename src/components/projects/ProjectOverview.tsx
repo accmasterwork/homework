@@ -52,7 +52,10 @@ export function ProjectOverview({ project, currentUser }: ProjectOverviewProps) 
           description: 'Complete minimum viable product',
           type: 'release',
           status: 'in_progress',
-          target_date: '2024-12-15',
+          priority: 'high',
+          progress_percentage: 65,
+          due_date: '2024-12-15',
+          created_by: 'user-123',
           created_at: '2024-11-01T10:00:00Z',
           updated_at: '2024-11-28T14:30:00Z'
         },
@@ -62,8 +65,11 @@ export function ProjectOverview({ project, currentUser }: ProjectOverviewProps) 
           title: 'Beta Testing',
           description: 'Conduct beta testing with users',
           type: 'community',
-          status: 'planned',
-          target_date: '2024-12-30',
+          status: 'planning',
+          priority: 'medium',
+          progress_percentage: 20,
+          due_date: '2024-12-30',
+          created_by: 'user-123',
           created_at: '2024-11-15T10:00:00Z',
           updated_at: '2024-11-28T14:30:00Z'
         }
@@ -78,20 +84,11 @@ export function ProjectOverview({ project, currentUser }: ProjectOverviewProps) 
           type: 'bug',
           status: 'open',
           priority: 'high',
+          labels: ['bug', 'ui'],
           assignee_id: 'user-123',
           reporter_id: 'user-456',
           created_at: '2024-11-28T10:00:00Z',
-          updated_at: '2024-11-28T14:30:00Z',
-          assignee: {
-            id: 'user-123',
-            name: 'John Doe',
-            avatar_url: null
-          },
-          reporter: {
-            id: 'user-456',
-            name: 'Jane Smith',
-            avatar_url: null
-          }
+          updated_at: '2024-11-28T14:30:00Z'
         },
         {
           id: '2',
@@ -101,20 +98,11 @@ export function ProjectOverview({ project, currentUser }: ProjectOverviewProps) 
           type: 'feature',
           status: 'in_progress',
           priority: 'medium',
+          labels: ['enhancement', 'ui'],
           assignee_id: 'user-789',
           reporter_id: 'user-123',
           created_at: '2024-11-27T10:00:00Z',
-          updated_at: '2024-11-28T14:30:00Z',
-          assignee: {
-            id: 'user-789',
-            name: 'Bob Wilson',
-            avatar_url: null
-          },
-          reporter: {
-            id: 'user-123',
-            name: 'John Doe',
-            avatar_url: null
-          }
+          updated_at: '2024-11-28T14:30:00Z'
         }
       ];
 

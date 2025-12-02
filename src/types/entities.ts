@@ -8,6 +8,12 @@ export interface User {
   github_username?: string;
   github_id?: number;
   role: 'admin' | 'user';
+  bio?: string;
+  website_url?: string;
+  location?: string;
+  company?: string;
+  twitter_username?: string;
+  linkedin_url?: string;
   created_at: string;
   updated_at: string;
 }

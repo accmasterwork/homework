@@ -12,11 +12,25 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { UserPreferencesStorage } from '@/lib/storage';
 
+interface SettingsState {
+  emailNotifications: boolean;
+  projectUpdates: boolean;
+  discussionReplies: boolean;
+  issueAssignments: boolean;
+  profileVisibility: string;
+  showEmail: boolean;
+  showLocation: boolean;
+  theme: string;
+  language: string;
+  itemsPerPage: number;
+  [key: string]: boolean | string | number; // Index signature for dynamic access
+}
+
 export default function SettingsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<SettingsState>({
     // Notification Settings
     emailNotifications: true,
     projectUpdates: true,
