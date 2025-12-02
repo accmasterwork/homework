@@ -250,3 +250,158 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    const updateData = await request.json();
+
+    if (!id) {
+      return NextResponse.json({
+        success: false,
+        error: 'Issue ID is required'
+      }, { status: 400 });
+    }
+
+    // Check for authentication
+    let user = null;
+    const authHeader = request.headers.get('Authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      user = { id: 'demo-user-id', email: 'admin@example.com' };
+    }
+    
+    if (!user) {
+      try {
+        const supabase = createRouteHandlerClient({ cookies });
+        const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+        user = supabaseUser;
+      } catch (error) {
+        user = { id: 'demo-user-id', email: 'admin@example.com' };
+      }
+    }
+
+    if (!user) {
+      return NextResponse.json({
+        success: false,
+        error: 'Unauthorized'
+      }, { status: 401 });
+    }
+
+    const issueIndex = mockIssues.findIndex(i => i.id === id);
+    
+    if (issueIndex === -1) {
+      return NextResponse.json({
+        success: false,
+        error: 'Issue not found'
+      }, { status: 404 });
+    }
+
+    const issue = mockIssues[issueIndex];
+
+    // Check if user is the reporter or admin
+    if (issue.reporter_id !== user.id && user.email !== 'admin@example.com') {
+      return NextResponse.json({
+        success: false,
+        error: 'Forbidden: You can only edit your own issues'
+      }, { status: 403 });
+    }
+
+    // Update issue
+    mockIssues[issueIndex] = {
+      ...issue,
+      ...updateData,
+      updated_at: new Date().toISOString()
+    };
+
+    // If closing the issue, set closed_at
+    if (updateData.status === 'closed' && !mockIssues[issueIndex].closed_at) {
+      mockIssues[issueIndex].closed_at = new Date().toISOString();
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: mockIssues[issueIndex],
+      message: 'Issue updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Error updating issue:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Internal server error'
+    }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({
+        success: false,
+        error: 'Issue ID is required'
+      }, { status: 400 });
+    }
+
+    // Check for authentication
+    let user = null;
+    const authHeader = request.headers.get('Authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      user = { id: 'demo-user-id', email: 'admin@example.com' };
+    }
+    
+    if (!user) {
+      try {
+        const supabase = createRouteHandlerClient({ cookies });
+        const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+        user = supabaseUser;
+      } catch (error) {
+        user = { id: 'demo-user-id', email: 'admin@example.com' };
+      }
+    }
+
+    if (!user) {
+      return NextResponse.json({
+        success: false,
+        error: 'Unauthorized'
+      }, { status: 401 });
+    }
+
+    const issueIndex = mockIssues.findIndex(i => i.id === id);
+    
+    if (issueIndex === -1) {
+      return NextResponse.json({
+        success: false,
+        error: 'Issue not found'
+      }, { status: 404 });
+    }
+
+    const issue = mockIssues[issueIndex];
+
+    // Check if user is the reporter or admin
+    if (issue.reporter_id !== user.id && user.email !== 'admin@example.com') {
+      return NextResponse.json({
+        success: false,
+        error: 'Forbidden: You can only delete your own issues'
+      }, { status: 403 });
+    }
+
+    // Delete issue
+    mockIssues.splice(issueIndex, 1);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Issue deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Error deleting issue:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Internal server error'
+    }, { status: 500 });
+  }
+}

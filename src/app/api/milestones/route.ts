@@ -229,3 +229,141 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    const updateData = await request.json();
+
+    if (!id) {
+      return NextResponse.json({
+        success: false,
+        error: 'Milestone ID is required'
+      }, { status: 400 });
+    }
+
+    // Check for authentication
+    let user = null;
+    const authHeader = request.headers.get('Authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      user = { id: 'demo-user-id', email: 'admin@example.com' };
+    }
+    
+    if (!user) {
+      try {
+        const supabase = createRouteHandlerClient({ cookies });
+        const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+        user = supabaseUser;
+      } catch (error) {
+        user = { id: 'demo-user-id', email: 'admin@example.com' };
+      }
+    }
+
+    if (!user) {
+      return NextResponse.json({
+        success: false,
+        error: 'Unauthorized'
+      }, { status: 401 });
+    }
+
+    const milestoneIndex = mockMilestones.findIndex(m => m.id === id);
+    
+    if (milestoneIndex === -1) {
+      return NextResponse.json({
+        success: false,
+        error: 'Milestone not found'
+      }, { status: 404 });
+    }
+
+    const milestone = mockMilestones[milestoneIndex];
+
+    // Update milestone
+    mockMilestones[milestoneIndex] = {
+      ...milestone,
+      ...updateData,
+      updated_at: new Date().toISOString()
+    };
+
+    // If completing the milestone, set completed_at
+    if (updateData.status === 'completed' && !mockMilestones[milestoneIndex].completed_at) {
+      mockMilestones[milestoneIndex].completed_at = new Date().toISOString();
+      mockMilestones[milestoneIndex].progress = 100;
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: mockMilestones[milestoneIndex],
+      message: 'Milestone updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Error updating milestone:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Internal server error'
+    }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({
+        success: false,
+        error: 'Milestone ID is required'
+      }, { status: 400 });
+    }
+
+    // Check for authentication
+    let user = null;
+    const authHeader = request.headers.get('Authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      user = { id: 'demo-user-id', email: 'admin@example.com' };
+    }
+    
+    if (!user) {
+      try {
+        const supabase = createRouteHandlerClient({ cookies });
+        const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+        user = supabaseUser;
+      } catch (error) {
+        user = { id: 'demo-user-id', email: 'admin@example.com' };
+      }
+    }
+
+    if (!user) {
+      return NextResponse.json({
+        success: false,
+        error: 'Unauthorized'
+      }, { status: 401 });
+    }
+
+    const milestoneIndex = mockMilestones.findIndex(m => m.id === id);
+    
+    if (milestoneIndex === -1) {
+      return NextResponse.json({
+        success: false,
+        error: 'Milestone not found'
+      }, { status: 404 });
+    }
+
+    // Delete milestone
+    mockMilestones.splice(milestoneIndex, 1);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Milestone deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Error deleting milestone:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Internal server error'
+    }, { status: 500 });
+  }
+}
