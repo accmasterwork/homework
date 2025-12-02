@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
     const docData = await request.json();
 
     // Check for authentication
-    let user = null;
+    let user: any = null;
     const authHeader = request.headers.get('Authorization');
     if (authHeader && authHeader.startsWith('Bearer ')) {
       user = { id: 'demo-user-id', email: 'admin@example.com', name: 'Admin User' };
@@ -268,7 +268,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check for authentication
-    let user = null;
+    let user: any = null;
     const authHeader = request.headers.get('Authorization');
     if (authHeader && authHeader.startsWith('Bearer ')) {
       user = { id: 'demo-user-id', email: 'admin@example.com' };
@@ -358,7 +358,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check for authentication
-    let user = null;
+    let user: any = null;
     const authHeader = request.headers.get('Authorization');
     if (authHeader && authHeader.startsWith('Bearer ')) {
       user = { id: 'demo-user-id', email: 'admin@example.com' };
@@ -416,4 +416,3 @@ export async function DELETE(request: NextRequest) {
     }, { status: 500 });
   }
 }
-
