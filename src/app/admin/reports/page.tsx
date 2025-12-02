@@ -49,14 +49,59 @@ export default function AdminReportsPage() {
   const handleGenerateReport = async (reportType: string) => {
     setIsGenerating(true);
     try {
-      // Mock report generation - in real implementation, this would call /api/admin/reports
+      // Simulate report generation
       await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.success(`${reportType} report generated successfully!`);
+      
+      // Generate mock CSV data
+      const reportData = generateMockReportData(reportType);
+      downloadReport(reportData, reportType);
+      
+      toast.success(`${reportType} report generated and downloaded successfully!`);
     } catch (error) {
       toast.error('Failed to generate report');
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const generateMockReportData = (reportType: string): string => {
+    const headers = ['Date', 'Metric', 'Value', 'Change'];
+    const rows = [
+      ['2024-11-28', 'Active Users', '245', '+12%'],
+      ['2024-11-27', 'Active Users', '233', '+8%'],
+      ['2024-11-26', 'Active Users', '216', '+5%'],
+      ['2024-11-25', 'Active Users', '205', '+3%'],
+      ['2024-11-24', 'Active Users', '199', '+2%'],
+    ];
+    
+    let csvContent = headers.join(',') + '\n';
+    rows.forEach(row => {
+      csvContent += row.join(',') + '\n';
+    });
+    
+    return csvContent;
+  };
+
+  const downloadReport = (data: string, reportType: string) => {
+    const blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    const fileName = `${reportType.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.csv`;
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', fileName);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadExistingReport = (report: any) => {
+    // Generate mock data for the existing report
+    const reportData = generateMockReportData(report.type);
+    downloadReport(reportData, report.name);
+    toast.success(`Downloaded ${report.name}`);
   };
 
   const reportTypes = [
@@ -308,7 +353,12 @@ export default function AdminReportsPage() {
                     >
                       {report.status}
                     </Badge>
-                    <Button variant="outline" size="sm" className="flex items-center space-x-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex items-center space-x-1"
+                      onClick={() => handleDownloadExistingReport(report)}
+                    >
                       <Download className="h-3 w-3" />
                       <span>Download</span>
                     </Button>
