@@ -139,6 +139,11 @@ export default function MilestonesPage() {
           milestones={filteredMilestones} 
           projects={projects}
           onMilestoneUpdate={fetchData}
+          onAddMilestone={() => setIsModalOpen(true)}
+          onMilestoneClick={(milestone) => {
+            console.log('Milestone clicked:', milestone);
+            // TODO: Open milestone detail/edit modal
+          }}
         />
 
         {/* Milestone Creation Modal */}

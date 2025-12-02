@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { IssuesManager } from '@/components/issues/IssuesManager';
+import { IssueFormModal } from '@/components/issues/IssueFormModal';
 import { useAuth } from '@/contexts/AuthContext';
 
 import { Button } from '@/components/ui/Button';
@@ -15,6 +16,7 @@ export default function IssuesPage() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
 
 
@@ -105,7 +107,7 @@ export default function IssuesPage() {
               </p>
             </div>
 
-            <Button>
+            <Button onClick={() => setIsModalOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               New Issue
             </Button>
@@ -116,6 +118,14 @@ export default function IssuesPage() {
           issues={issues} 
           projects={projects}
           onIssueUpdate={fetchData}
+        />
+
+        {/* Issue Creation Modal */}
+        <IssueFormModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={fetchData}
+          projects={projects}
         />
       </div>
     </div>
