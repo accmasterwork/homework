@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    env_file:
+      - .env.local
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    restart: unless-stopped
+    depends_on:
+      - db
+    networks:
+      - dev-network
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ospm_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./supabase/migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - dev-network
+
+  supabase:
+    image: supabase/supabase:latest
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_DB: ospm_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - dev-network
+
+volumes:
+  postgres_dev_data:
+
+networks:
+  dev-network:
+    driver: bridge
+
