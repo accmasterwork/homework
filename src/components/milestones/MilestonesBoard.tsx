@@ -57,6 +57,7 @@ const columns = [
 
 export function MilestonesBoard({ milestones, projects, onMilestoneUpdate }: MilestonesBoardProps) {
   const [draggedMilestone, setDraggedMilestone] = useState<Milestone | null>(null);
+  const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null);
 
   const getMilestonesByStatus = (status: string) => {
     return milestones.filter(milestone => milestone.status === status);
@@ -83,11 +84,32 @@ export function MilestonesBoard({ milestones, projects, onMilestoneUpdate }: Mil
       return;
     }
 
-    // TODO: Update milestone status in database
-    console.log(`Moving milestone ${draggedMilestone.id} to ${newStatus}`);
-    
-    setDraggedMilestone(null);
-    onMilestoneUpdate();
+    try {
+      // Update milestone status via API
+      await fetch(`/api/milestones/${draggedMilestone.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      
+      console.log(`Milestone ${draggedMilestone.id} moved to ${newStatus}`);
+      onMilestoneUpdate();
+    } catch (error) {
+      console.error('Failed to update milestone:', error);
+    } finally {
+      setDraggedMilestone(null);
+    }
+  };
+
+  const handleMilestoneClick = (milestone: Milestone) => {
+    setSelectedMilestone(milestone);
+    // In a full implementation, this would open a modal or navigate to detail view
+    console.log('Viewing milestone:', milestone);
+  };
+
+  const handleAddMilestone = (status: string) => {
+    console.log('Add milestone to status:', status);
+    // This should trigger the parent component's modal with pre-selected status
   };
 
   const MilestoneCard = ({ milestone }: { milestone: Milestone }) => {
@@ -98,6 +120,7 @@ export function MilestonesBoard({ milestones, projects, onMilestoneUpdate }: Mil
         className="cursor-move hover:shadow-md transition-shadow"
         draggable
         onDragStart={() => handleDragStart(milestone)}
+        onClick={() => handleMilestoneClick(milestone)}
       >
         <CardContent className="p-4">
           <div className="space-y-3">
@@ -106,7 +129,15 @@ export function MilestonesBoard({ milestones, projects, onMilestoneUpdate }: Mil
               <h4 className="font-medium text-sm leading-tight pr-2">
                 {milestone.title}
               </h4>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 w-6 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMilestoneClick(milestone);
+                }}
+              >
                 <MoreHorizontal className="w-4 h-4" />
               </Button>
             </div>
@@ -220,7 +251,13 @@ export function MilestonesBoard({ milestones, projects, onMilestoneUpdate }: Mil
                     {columnMilestones.length}
                   </Badge>
                 </div>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 w-6 p-0"
+                  onClick={() => handleAddMilestone(column.id)}
+                  title={`Add milestone to ${column.title}`}
+                >
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
@@ -243,7 +280,12 @@ export function MilestonesBoard({ milestones, projects, onMilestoneUpdate }: Mil
                     <div className="text-center py-8 text-muted-foreground">
                       <Icon className="w-12 h-12 mx-auto mb-4 opacity-50" />
                       <p className="text-sm">No milestones in {column.title.toLowerCase()}</p>
-                      <Button variant="outline" size="sm" className="mt-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-2"
+                        onClick={() => handleAddMilestone(column.id)}
+                      >
                         <Plus className="w-4 h-4 mr-2" />
                         Add Milestone
                       </Button>
@@ -265,7 +307,7 @@ export function MilestonesBoard({ milestones, projects, onMilestoneUpdate }: Mil
             Create your first milestone to start tracking progress on your projects. 
             Milestones help you organize work and measure success.
           </p>
-          <Button>
+          <Button onClick={() => handleAddMilestone('planning')}>
             <Plus className="w-4 h-4 mr-2" />
             Create First Milestone
           </Button>
@@ -274,4 +316,3 @@ export function MilestonesBoard({ milestones, projects, onMilestoneUpdate }: Mil
     </div>
   );
 }
-
